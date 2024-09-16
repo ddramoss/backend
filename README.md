@@ -36,8 +36,6 @@ Para comenzar con el desarrollo, sigue estos pasos:
         - Usuario: ana@example.com
         - Contraseña: pass123
 
-    Abre [http://localhost:8000](http://localhost:8000) con tu navegador.
-
 4. **Inicio del proyecto**
 
    Ejecuta el siguiente comando para iniciar el proyecto:
