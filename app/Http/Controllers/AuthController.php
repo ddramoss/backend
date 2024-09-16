@@ -7,12 +7,18 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use Illuminate\Support\Facades\Log;
+use App\Http\Requests\RegisterRequest;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    // Registro de usuario
-    public function register(Request $request)
+    /**
+     * register: Registro de usuario
+     *
+     * @param  RegisterRequest $request
+     * @return JsonResponse
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
             'name' => $request->name,
@@ -25,28 +31,46 @@ class AuthController extends Controller
         return response()->json(compact('user', 'token'), 201);
     }
 
-    public function login(Request $request)
+    /**
+     * login: Inicio de sesión
+     *
+     * @param  Request $request
+     * @return JsonResponse
+     */
+    public function login(Request $request): JsonResponse
     {
         $credentials = $request->only('email', 'password');
-        Log::info('Intentando login con: ', $credentials);
-
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
-                Log::info('Credenciales inválidas');
-                return response()->json(['error' => 'Credenciales inválidas'], 401);
+                return response()->json(['error' => 'Usuario y/o contraseña incorrecta.'], 401);
             }
         } catch (JWTException $e) {
-            Log::error('Error al crear el token: ' . $e->getMessage());
-            return response()->json(['error' => 'No se pudo crear el token'], 500);
+            return response()->json(['error' => 'Error al iniciar sesión.'], 500);
         }
 
-        Log::info('Token generado: ' . $token);
-        return response()->json(compact('token'));
+        return response()->json(['token' => $token]);
     }
 
-    // Obtener el usuario autenticado
-    public function me()
+    /**
+     * me: Obtiene el usuario autenticado.
+     *
+     * @return JsonResponse
+     */
+    public function me(): JsonResponse
     {
         return response()->json(Auth::user());
+    }
+
+    /**
+     * logout: Cierra sesión
+     *
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        // Invalida el token JWT
+        JWTAuth::parseToken()->invalidate();
+
+        return response()->json(['message' => 'Se ha cerrado la sesión correctamente.']);
     }
 }
